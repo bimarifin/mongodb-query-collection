@@ -1,0 +1,33 @@
+tested on mongod-4.4.1
+
+- change type from int64 to string, all values (multi: true).
+db.collection.update(
+  { key : { $type: 18 } },
+  [{ $set: { key: { $toString: "$key" } } }],
+  { multi: true }
+)
+
+- remove dups on spesific keys.
+db.collection.aggregate([
+  { $group: { 
+        _id: "$key",
+        dups: { "$addToSet": "$_id" }, 
+        count: { "$sum": 1 } 
+  }}, 
+  { $project: { key: "$_id", _id: { $arrayElemAt: [ "$dups", 0 ] } } }
+], {"allowDiskUse":true} )
+
+- remove all key that has null / '' (empty) / spesific values.
+db.collection.update(
+  {},
+  [{ $replaceWith: {
+    $arrayToObject: {
+      $filter: {
+        input: { $objectToArray: "$$ROOT" },
+        as: "item",
+        cond: { $ne: ["$$item.v", ''] } // change '' with null or else.
+      }
+    }
+  }}],
+  { multi: true }
+)
