@@ -1,1 +1,7 @@
-db.collection.updateMany( {}, { $rename: { "key": "key2" } } )
+db.collection.updateMany({},
+    {
+      $rename:{
+        "key": "key2"
+          }}, {
+            multi: true
+              })
